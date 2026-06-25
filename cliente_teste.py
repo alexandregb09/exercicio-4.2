@@ -8,27 +8,27 @@ from mcp.client.stdio import stdio_client
 
 def extrair_json(conteudo_tool):
     """
-    Função auxiliar para extrair e parsear o JSON de forma robusta,
-    lidando com variações do SDK (.text ou extração direta).
+    Extrai e parseia o JSON do conteúdo MCP de forma robusta.
+    FastMCP expande listas em múltiplos TextContent (um por elemento),
+    então múltiplos itens são remontados como lista Python.
     """
-    # Se o conteúdo for uma lista (comum no MCP), pegamos o primeiro elemento
-    if isinstance(conteudo_tool, list) and len(conteudo_tool) > 0:
-        item = conteudo_tool[0]
-        # Se o item tiver o atributo 'text' (comportamento padrão do SDK)
+    if not isinstance(conteudo_tool, list) or len(conteudo_tool) == 0:
+        if isinstance(conteudo_tool, str):
+            return json.loads(conteudo_tool)
+        return conteudo_tool
+
+    def parse_item(item):
         if hasattr(item, "text"):
             return json.loads(item.text)
-        # Se for um dicionário puro retornado pelo SDK
-        elif isinstance(item, dict) and "text" in item:
+        if isinstance(item, dict) and "text" in item:
             return json.loads(item["text"])
-        # Caso o item já seja o próprio JSON estruturado
-        elif isinstance(item, dict):
-            return item
-    
-    # Caso já venha como string
-    if isinstance(conteudo_tool, str):
-        return json.loads(conteudo_tool)
-        
-    return conteudo_tool
+        return item
+
+    if len(conteudo_tool) == 1:
+        return parse_item(conteudo_tool[0])
+
+    # Múltiplos itens → FastMCP expandiu uma lista; remonta como lista Python
+    return [parse_item(item) for item in conteudo_tool]
 
 
 async def main() -> dict:
