@@ -1,6 +1,15 @@
 # cliente_teste.py
 import asyncio
 import json
+import logging
+import sys
+import warnings
+
+# 1. Silencia avisos que possam poluir o stdout
+warnings.filterwarnings("ignore")
+
+# 2. Garante que os logs vão para o stderr (onde não quebram o JSON do avaliador)
+logging.basicConfig(level=logging.ERROR, stream=sys.stderr)
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -78,4 +87,5 @@ async def main() -> dict:
 
 
 if __name__ == "__main__":
+    # Garante que apenas o JSON estrito saia no stdout
     print(json.dumps(asyncio.run(main())))
