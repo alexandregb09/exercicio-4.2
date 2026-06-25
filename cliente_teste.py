@@ -1,6 +1,7 @@
 # cliente_teste.py
 import asyncio
 import json
+import os
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -33,7 +34,8 @@ def extrair_json(conteudo_tool):
 
 async def main() -> dict:
     params = StdioServerParameters(command="python", args=["servidor_mcp.py"])
-    async with stdio_client(params) as (read, write):
+    devnull = open(os.devnull, "w")
+    async with stdio_client(params, errlog=devnull) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
 
